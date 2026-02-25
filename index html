@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Ganancia Pro + WhatsApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .glass-card { background: #ffffff; border: 1px solid #e2e8f0; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .qty-btn { transition: all 0.2s; }
+        .qty-btn:active { transform: scale(0.9); }
+        .step-btn { font-size: 0.7rem; font-weight: 800; }
+    </style>
+</head>
+<body class="min-h-screen flex items-start justify-center p-4 sm:p-8">
+
+    <div class="max-w-4xl w-full space-y-6">
+        <div class="glass-card rounded-3xl shadow-xl overflow-hidden">
+            <header class="bg-slate-900 p-6 text-center relative">
+                <h1 class="text-2xl font-bold text-white">Gestor de Márgenes y Ventas</h1>
+                <p class="text-slate-400 text-sm mt-1 font-medium italic">Análisis integral de rentabilidad - CLP</p>
+                <button onclick="resetAll()" class="absolute right-6 top-7 text-slate-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            </header>
+
+            <div class="p-6 md:p-8">
+                <!-- Inputs Superiores -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 mb-2 uppercase text-center md:text-left">Costo Unitario Neto</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3 text-slate-400 font-bold">$</span>
+                            <input type="text" id="costPrice" inputmode="numeric" placeholder="0" class="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xl font-bold text-slate-800 focus:outline-none focus:border-blue-500 text-center" oninput="handleNumericInput(this)">
+                        </div>
+                    </div>
+                    
+                    <!-- Unidades con controles extendidos -->
+                    <div class="space-y-3">
+                        <label class="block text-xs font-bold text-slate-700 mb-1 uppercase text-center">Unidades</label>
+                        <div class="flex items-center gap-2">
+                            <button onclick="changeQty(-1)" class="qty-btn w-10 h-10 flex items-center justify-center bg-slate-100 rounded-xl font-bold text-slate-600 border border-slate-200">-</button>
+                            <input type="text" id="quantity" value="1" inputmode="numeric" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl py-2 text-lg font-bold text-slate-800 focus:outline-none text-center" oninput="handleNumericInput(this)">
+                            <button onclick="changeQty(1)" class="qty-btn w-10 h-10 flex items-center justify-center bg-blue-500 rounded-xl font-bold text-white shadow-lg">+</button>
+                        </div>
+                        
+                        <!-- Panel de incrementos rápidos (Actualizado con ±25) -->
+                        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                            <div class="grid grid-cols-4 gap-1">
+                                <div class="flex flex-col gap-1">
+                                    <button onclick="changeQty(5)" class="step-btn py-1 bg-white border border-slate-200 rounded text-blue-600 hover:bg-blue-50">+5</button>
+                                    <button onclick="changeQty(-5)" class="step-btn py-1 bg-white border border-slate-200 rounded text-red-500 hover:bg-red-50">-5</button>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <button onclick="changeQty(10)" class="step-btn py-1 bg-white border border-slate-200 rounded text-blue-600 hover:bg-blue-50">+10</button>
+                                    <button onclick="changeQty(-10)" class="step-btn py-1 bg-white border border-slate-200 rounded text-red-500 hover:bg-red-50">-10</button>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <button onclick="changeQty(25)" class="step-btn py-1 bg-white border border-slate-200 rounded text-blue-600 hover:bg-blue-50">+25</button>
+                                    <button onclick="changeQty(-25)" class="step-btn py-1 bg-white border border-slate-200 rounded text-red-500 hover:bg-red-50">-25</button>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <button onclick="changeQty(50)" class="step-btn py-1 bg-white border border-slate-200 rounded text-blue-600 hover:bg-blue-50">+50</button>
+                                    <button onclick="changeQty(-50)" class="step-btn py-1 bg-white border border-slate-200 rounded text-red-500 hover:bg-red-50">-50</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center bg-slate-50 rounded-2xl border p-2 h-fit md:mt-8">
+                        <span class="text-[9px] font-bold text-slate-500 uppercase mb-1">IVA (19%)</span>
+                        <input type="checkbox" id="includeIva" onchange="calculateAll()" class="w-5 h-5 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Tabla de Resultados -->
+                <div class="mb-8">
+                    <div class="border border-slate-200 rounded-2xl overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-[10px] uppercase font-bold">
+                                    <th class="px-4 py-4 text-center">Margen</th>
+                                    <th class="px-4 py-4">PVP Unitario</th>
+                                    <th class="px-4 py-4">Gana. Unit.</th>
+                                    <th class="px-4 py-4 text-right bg-blue-50/50">Total Venta</th>
+                                    <th class="px-4 py-4 text-right bg-emerald-50/50">Total Ganancia</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Botones de WhatsApp -->
+                <div class="mb-8 p-6 bg-green-50 rounded-3xl border border-green-200">
+                    <h3 class="text-xs font-black uppercase text-green-800 mb-4 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-2.203 0-4.007 1.77-4.037 3.963-.03 2.193 1.74 3.987 3.943 4.017 2.203.03 4.007-1.77 4.037-3.963.03-2.193-1.74-3.987-3.943-4.017zm.069 8.031c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4zm-.062-11.203C6.469 3 2 7.469 2 13.031c0 1.83.488 3.539 1.332 5.016L2 23l5.078-1.332c1.445.789 3.102 1.242 4.852 1.242 5.562 0 10.031-4.469 10.031-10.031S17.492 3 11.938 3z"/></svg>
+                        Enviar detalle por WhatsApp
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button onclick="sendWhatsApp('56958635985')" class="flex items-center justify-between px-6 py-4 bg-white border border-green-300 rounded-2xl hover:bg-green-100 transition-colors group">
+                            <div class="text-left">
+                                <p class="text-xs font-bold text-green-600 uppercase">Marcos</p>
+                                <p class="text-sm font-medium text-slate-600">+56 9 5863 5985</p>
+                            </div>
+                            <span class="bg-green-500 text-white p-2 rounded-full group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                            </span>
+                        </button>
+                        <button onclick="sendWhatsApp('56932264057')" class="flex items-center justify-between px-6 py-4 bg-white border border-green-300 rounded-2xl hover:bg-green-100 transition-colors group">
+                            <div class="text-left">
+                                <p class="text-xs font-bold text-green-600 uppercase">Geraldine</p>
+                                <p class="text-sm font-medium text-slate-600">+56 9 3226 4057</p>
+                            </div>
+                            <span class="bg-green-500 text-white p-2 rounded-full group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Footer de Costo de Reposición -->
+                <div id="reposicionCard" class="hidden mb-8 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-amber-200 rounded-full text-amber-700">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a1 1 0 00-1.414-1.414L10 12.429V2a1 1 0 00-2 0v10.429l-3.486-3.486a1 1 0 10-1.414 1.414L8 15.243V17a1 1 0 11-2 0v-1.757l1.157-1.157a1 1 0 10-1.414-1.414L4.586 14H4v-1.157l1.157-1.157a1 1 0 10-1.414-1.414L2.586 11.414A3 3 0 108 15v1a3 3 0 006 0v-1h-4z" clip-rule="evenodd"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-amber-800 uppercase">Costo de Reposición</p>
+                            <p class="text-xs text-amber-700">Dinero necesario para volver a comprar el stock</p>
+                        </div>
+                    </div>
+                    <p id="totalReposicion" class="text-xl font-black text-amber-900">$0</p>
+                </div>
+
+                <!-- Calculadora Inversa + Comisión -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-6 bg-slate-900 rounded-3xl text-white">
+                        <h3 class="text-xs font-black uppercase text-slate-500 mb-4">Análisis Inverso</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[10px] text-slate-400 block mb-1 uppercase">PVP Cobrado al Cliente</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2 text-slate-500 font-bold">$</span>
+                                    <input type="text" id="reverseSalePrice" inputmode="numeric" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-lg font-bold text-blue-400 focus:outline-none" oninput="handleNumericInput(this); calculateReverse()">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
+                                    <p class="text-[9px] text-slate-500 uppercase">Margen Neto</p>
+                                    <p class="text-xl font-black text-white"><span id="reverseResultPct">0</span>%</p>
+                                </div>
+                                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 text-right">
+                                    <p class="text-[9px] text-slate-500 uppercase">Ganancia Real</p>
+                                    <p id="reverseResultAmount" class="text-xl font-black text-emerald-400">$0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-6 bg-blue-50 rounded-3xl border border-blue-100">
+                        <h3 class="text-xs font-black uppercase text-blue-800 mb-4">Comisiones de Pago</h3>
+                        <div class="space-y-3">
+                            <select id="comisionType" class="w-full bg-white border border-blue-200 rounded-xl px-3 py-2 text-sm font-medium focus:outline-none" onchange="calculateAll(); calculateReverse()">
+                                <option value="0">Sin Comisión (Efectivo/Transferencia)</option>
+                                <option value="1.5">Débito Transbank (1.5%)</option>
+                                <option value="2.9">Crédito Transbank (2.9%)</option>
+                                <option value="3.5">SumUp / Otros (3.5%)</option>
+                            </select>
+                            <div class="flex justify-between items-center pt-2">
+                                <p class="text-[10px] text-blue-600 font-bold uppercase leading-tight">Monto descontado<br>por la máquina:</p>
+                                <p id="comisionDescuento" class="text-lg font-black text-blue-900">$0</p>
+                            </div>
+                            <p class="text-[9px] text-blue-400 italic mt-2">* El cálculo de ganancia arriba ya resta esta comisión.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const formatter = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 });
+        const inputFormatter = new Intl.NumberFormat('es-CL');
+
+        function formatValue(val) {
+            const clean = val.replace(/\D/g, "");
+            return clean === "" ? "" : inputFormatter.format(clean);
+        }
+
+        function handleNumericInput(el) {
+            const start = el.selectionStart, len = el.value.length;
+            el.value = formatValue(el.value);
+            const diff = el.value.length - len;
+            el.setSelectionRange(start + diff, start + diff);
+            calculateAll();
+            calculateReverse();
+        }
+
+        function parseNum(val) { return parseFloat(String(val).replace(/\./g, "")) || 0; }
+
+        function changeQty(delta) {
+            const el = document.getElementById('quantity');
+            let val = parseNum(el.value) + delta;
+            el.value = formatValue(String(val < 1 ? 1 : val));
+            calculateAll();
+        }
+
+        function resetAll() {
+            document.getElementById('costPrice').value = "";
+            document.getElementById('quantity').value = "1";
+            document.getElementById('reverseSalePrice').value = "";
+            document.getElementById('includeIva').checked = false;
+            calculateAll();
+            calculateReverse();
+        }
+
+        function calculateAll() {
+            const cost = parseNum(document.getElementById('costPrice').value);
+            const qty = parseNum(document.getElementById('quantity').value);
+            const includeIva = document.getElementById('includeIva').checked;
+            const comisionPct = parseFloat(document.getElementById('comisionType').value) / 100;
+            
+            const standard = [25, 30, 35, 40, 50];
+            const tbody = document.getElementById('resultsTableBody');
+            tbody.innerHTML = '';
+
+            if(cost > 0) document.getElementById('reposicionCard').classList.remove('hidden');
+            else document.getElementById('reposicionCard').classList.add('hidden');
+
+            standard.forEach(p => {
+                const markup = cost * (p / 100);
+                const netoPrice = cost + markup;
+                const finalPvp = includeIva ? netoPrice * 1.19 : netoPrice;
+                
+                const comision = finalPvp * comisionPct;
+                const unitProfit = markup - comision;
+                const totalVenta = finalPvp * qty;
+                const totalProfit = unitProfit * qty;
+
+                const row = document.createElement('tr');
+                row.className = `transition-colors hover:bg-slate-50 ${p === 35 ? 'bg-emerald-50/50' : ''}`;
+                row.innerHTML = `
+                    <td class="px-4 py-4 text-center font-bold text-slate-700">${p}% ${p===35?'<span class="block text-[8px] text-emerald-600">RECOM.</span>':''}</td>
+                    <td class="px-4 py-4 text-slate-900 font-bold">${formatter.format(finalPvp)}</td>
+                    <td class="px-4 py-4 text-emerald-600 font-medium">+ ${formatter.format(unitProfit)}</td>
+                    <td class="px-4 py-4 text-right font-bold text-slate-500 bg-blue-50/20">${formatter.format(totalVenta)}</td>
+                    <td class="px-4 py-4 text-right font-black text-blue-600 bg-emerald-50/20">${formatter.format(totalProfit)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('totalReposicion').innerText = formatter.format(cost * qty);
+        }
+
+        function calculateReverse() {
+            const cost = parseNum(document.getElementById('costPrice').value);
+            const salePrice = parseNum(document.getElementById('reverseSalePrice').value);
+            const includeIva = document.getElementById('includeIva').checked;
+            const comisionPct = parseFloat(document.getElementById('comisionType').value) / 100;
+
+            if (cost <= 0 || salePrice <= 0) {
+                document.getElementById('reverseResultPct').innerText = "0";
+                document.getElementById('reverseResultAmount').innerText = "$0";
+                document.getElementById('comisionDescuento').innerText = "$0";
+                return;
+            }
+
+            const netoSale = includeIva ? (salePrice / 1.19) : salePrice;
+            const comisionMonto = salePrice * comisionPct;
+            const profit = (netoSale - cost) - comisionMonto;
+            const margin = ((profit + cost) / cost - 1) * 100;
+
+            document.getElementById('reverseResultPct').innerText = margin.toFixed(1);
+            document.getElementById('reverseResultAmount').innerText = formatter.format(profit);
+            document.getElementById('comisionDescuento').innerText = formatter.format(comisionMonto);
+        }
+
+        function sendWhatsApp(phone) {
+            const cost = document.getElementById('costPrice').value || "0";
+            const qty = document.getElementById('quantity').value || "1";
+            const iva = document.getElementById('includeIva').checked ? "SÍ" : "NO";
+            const comisionLabel = document.getElementById('comisionType').options[document.getElementById('comisionType').selectedIndex].text;
+            
+            let message = `*📊 INFORME DE GANANC
